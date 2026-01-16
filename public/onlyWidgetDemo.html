@@ -1,0 +1,15 @@
+<div id="stocks-widget"></div>
+
+<script src="../dist/stocks.bundle.js"></script>
+<script>
+    console.time('init');
+    StocksSnapshot.init({
+        containerId: 'stocks-widget',
+        symbol: 'AAPL',
+        apiKey: 'O5GMYY8SBQ83A8J4',
+        sparkline: 'WeEk'
+    }).then(() => {
+        console.timeEnd('init')
+        console.log('Stocks widget ready')
+    });
+</script>

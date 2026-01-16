@@ -1,93 +1,250 @@
-# R2StocksSnapshot
+# 📊 Stocks Snapshot Widget
 
+A **lightweight, embeddable stock quote widget** built with **Web Components** and **vanilla JavaScript**.  
+Framework-agnostic, fully isolated via **Shadow DOM**, and explicitly themeable by the host application.
 
+Designed to be dropped into any site with minimal setup while remaining production-ready.
 
-## Getting started
+---
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## ✨ Key Features
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- 📦 Single JS bundle embed
+- 🧩 Web Components (Custom Elements + Shadow DOM)
+- 🎨 Explicit theming via CSS Variables or JavaScript
+- 📈 Real-time stock data (Alpha Vantage)
+- 🔁 Auto-refresh (default: 60s)
+- 📊 Optional sparkline (7d or 24h)
+- ⚡ Performance-focused (lazy loading, requestIdleCallback)
+- 🔍 Lightweight observability (OpenTelemetry concepts)
+- 🧪 Unit tested, framework-independent
 
-## Add your files
+---
 
-* [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 🚀 Embedding the Widget
 
+### 1. Include the bundle
+
+```html
+<script async src="stocks.bundle.js"></script>
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/fguerendiain33/r2stockssnapshot.git
-git branch -M main
-git push -uf origin main
+
+### 2. Add a container
+
+```html
+<div id="stocks-widget"></div>
 ```
 
-## Integrate with your tools
+### 3. Initialize
 
-* [Set up project integrations](https://gitlab.com/fguerendiain33/r2stockssnapshot/-/settings/integrations)
+```html
+<script>
+  StocksSnapshot.init({
+    containerId: 'stocks-widget',
+    symbol: 'AAPL',
+    apiKey: 'YOUR_API_KEY'
+  });
+</script>
+```
 
-## Collaborate with your team
+`init()` returns a Promise that resolves on first paint and rejects on fatal errors.
 
-* [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+---
 
-## Test and Deploy
+## ⚙️ Configuration
 
-Use the built-in continuous integration in GitLab.
+```ts
+StocksSnapshot.init({
+  containerId: string;       // required
+  symbol?: string;           // default: MSFT
+  apiKey: string;            // required
+  refreshInterval?: number;  // ms (default: 60000)
+  sparkline?: 'week' | 'hourly' | false;
+  fontUrl?: string;
+  theme?: ThemeConfig;
+});
+```
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+---
 
-***
+## 🎨 Theming & Styling
 
-# Editing this README
+The widget **never reads host styles implicitly**.  
+All styling is **explicit**, predictable, and isolated.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Supported CSS Variables
 
-## Suggestions for a good README
+```css
+--stocks-bg-color
+--stocks-text-color
+--stocks-primary-color
+--stocks-up-color
+--stocks-down-color
+--stocks-font-family
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+All variables have safe defaults.
 
-## Name
-Choose a self-explaining name for your project.
+---
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Styling Option 1 — CSS Only
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+```html
+<div
+  id="stocks-widget"
+  style="
+    --stocks-bg-color: #0f172a;
+    --stocks-text-color: #e5e7eb;
+    --stocks-primary-color: #38bdf8;
+    --stocks-font-family: Inter, sans-serif;
+  "
+></div>
+```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+---
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### Styling Option 2 — JavaScript Theme (recommended)
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```js
+StocksSnapshot.init({
+  containerId: 'stocks-widget',
+  symbol: 'AAPL',
+  apiKey: 'YOUR_API_KEY',
+  fontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap',
+  theme: {
+    'bg-color': '#ffffff',
+    'text-color': '#111111',
+    'primary-color': '#0066ff',
+    'font-family': 'Inter, sans-serif'
+  }
+});
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Theme keys are mapped internally to `--stocks-*` CSS variables.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+---
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## 🌗 Light / Dark Mode
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+The widget does **not** manage light/dark mode internally.  
+Theme changes are fully controlled by the host application.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+This keeps the widget:
+- Decoupled
+- Predictable
+- Easy to integrate into existing design systems
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+---
 
-## License
-For open source projects, say how it is licensed.
+## 🔗 Interactivity
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+The widget emits a composed `CustomEvent` (`quoteClick`) when the quote is clicked:
+
+```js
+widget.addEventListener('quoteClick', (e) => {
+  console.log(e.detail.symbol, e.detail.url);
+});
+```
+
+Navigation and side effects remain a host responsibility.
+
+---
+
+## 📈 Sparkline
+
+Optional sparkline visualizing recent price movement.
+
+```js
+sparkline: 'week'   // last 7 daily closes (free API)
+sparkline: 'hourly' // last 24h intraday (premium API)
+```
+
+The sparkline is rendered once and does not re-render on every refresh.
+
+---
+
+## 📊 Observability
+
+The widget includes **lightweight observability** based on **OpenTelemetry concepts**.
+
+### Tracing
+- `stocks.fetch`
+- `widget.render`
+
+Spans are created only if a compatible tracer exists.
+Otherwise, observability is a **no-op** (no errors, no overhead).
+
+### Metrics
+- Widget load time
+- API error count
+
+---
+
+## ⚡ Performance Notes
+
+- Shadow DOM for isolation
+- Lazy-loaded sparkline rendering
+- `requestIdleCallback` for non-critical work
+- Minimal runtime dependencies
+- Designed to stay under **50 KB gzipped** (core features)
+
+---
+
+### Testing & Coverage
+
+Unit tests focus on public contracts, lifecycle behavior, and business logic.
+Rendering-only code, type definitions, and passive observability hooks are intentionally excluded to avoid artificial coverage.
+
+```bash
+npm test
+```
+
+---
+
+## 🖥️ Server-Side Rendering (Optional)
+
+A minimal Express server demonstrates how the widget can be pre-rendered for:
+- Faster first paint
+- Improved perceived performance
+
+SSR is optional; the widget works fully client-side.
+
+---
+
+## 🐳 Docker
+
+Multi-stage Docker setup:
+- Build stage: `node:alpine` (build & bundle)
+- Runtime stage: `nginx:alpine` (serve static assets)
+
+### Build & Run (Docker)
+
+```bash
+docker build -t stocks-widget .
+docker run -p 8080:80 stocks-widget
+```
+### Run with Docker Compose
+
+A `docker-compose.yml` is included to simplify local development and demos.
+
+```bash
+docker-compose up --build
+```
+**Use cases:**
+
+- Serve the static widget bundle
+- Run the optional SSR server
+- Launch a demo host page
+
+Docker Compose is optional and intended for reproducible local environments.
+
+---
+
+## 📎 Notes
+
+Built as part of the **R2 Frontend Architect & Developer Challenge**, with focus on:
+- Embedding experience
+- Isolation & theming
+- Performance
+- Observability
+- Developer ergonomics

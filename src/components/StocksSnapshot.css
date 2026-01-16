@@ -1,0 +1,133 @@
+:host {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    align-self: stretch;
+    container-type: inline-size;
+
+    --stocks-bg-color: #ffffff;
+    --stocks-border-color: #ddd;
+    --stocks-text-color: #111111;
+    --stocks-primary-color: #0066ff;
+    --stocks-up-color: #0a8a0a;
+    --stocks-down-color: #c62828;
+    --stocks-error-color: #b00020;
+    --stocks-font-family: system-ui, sans-serif;
+    font-family: var(--stocks-font-family);
+    color: var(--stocks-text-color);
+}
+
+.widget {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    align-items: center;
+    background: var(--stocks-bg-color);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--stocks-border-color);
+    gap: 12px;
+}
+
+.widget,
+.widget * {
+    min-width: 0;
+}
+
+@container (max-width: 430px) {
+    .widget {
+        flex-flow: column;
+        align-items: center;        
+        gap: 0;
+    }
+}
+
+.widgetLeft {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
+
+
+.widgetCompany {
+    display: flex;
+    gap: 6px;
+}
+
+.widgetPrice {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.symbol:hover {
+    cursor: pointer;
+    color: blue;
+}
+
+.price {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--stocks-primary-color)
+}
+
+.change.up {
+    color: var(--stocks-up-color);
+}
+
+.change.down {
+    color: var(--stocks-down-color);
+}
+
+.sparkline {
+    display: none;
+    margin-top: 8px;
+    border-radius: 4px;
+    padding: 12px;
+    width: fit-content;
+
+    background-color: color-mix(in srgb,
+            var(--stocks-primary-color) 15%,
+            transparent);
+
+    background-image:
+        linear-gradient(to right,
+            color-mix(in srgb, var(--stocks-primary-color) 25%, transparent) 1px,
+            transparent 1px),
+        linear-gradient(to bottom,
+            color-mix(in srgb, var(--stocks-primary-color) 25%, transparent) 1px,
+            transparent 1px);
+
+    background-size: 12px 12px;
+}
+
+.sparkline.has-data {
+    display: block;
+}
+
+.error {
+    color: var(--stocks-error-color);
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border-width: 2px;
+    border: 3px solid color-mix(in srgb, var(--stocks-primary-color) 30%, transparent);
+    border-top-color: var(--stocks-primary-color);
+    animation: spin 1.2s linear infinite;
+    margin: 8px 0;
+}
+
+.spinner.has-error {
+    display: none;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Market Daily — Financial News</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+        /* ---------- RESET / BASE ---------- */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ---------- THEME VARIABLES ---------- */
+        :root {
+            --bg-page: #f5f6f8;
+            --bg-surface: #ffffff;
+            --bg-sidebar: #4f5053;
+            --text-main: #111;
+            --text-muted: #555;
+            --border-color: #e5e7eb;
+        }
+
+        body[data-theme="dark"] {
+            --bg-page: #0b1220;
+            --bg-surface: #0f172a;
+            --bg-sidebar: #020617;
+            --text-main: #e5e7eb;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+        }
+
+        /* ---------- LAYOUT ---------- */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        /* ---------- SIDEBAR ---------- */
+        .sidebar {
+            background: var(--bg-sidebar);
+            color: #e5e7eb;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .navbar a {
+            display: block;
+            padding: 6px 0;
+            font-size: 0.95rem;
+            color: #cbd5f5;
+        }
+
+        .navbar a:hover {
+            color: #ffffff;
+        }
+
+        .theme-switch {
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #1e293b;
+        }
+
+        .theme-switch button {
+            width: 100%;
+            background: transparent;
+            color: #cbd5f5;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .theme-switch button:hover {
+            background: #1e293b;
+        }
+
+        .widget-container {
+            margin-top: auto;
+        }
+
+        /* ---------- MAIN CONTENT ---------- */
+        .main {
+            padding: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .headline {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .subhead {
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            max-width: 700px;
+        }
+
+        /* ---------- MARKET SNAPSHOT ---------- */
+        .market-snapshot {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .market-card {
+            background: var(--bg-surface);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .market-card .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .market-card .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .up {
+            color: #0a8a0a;
+        }
+
+        /* ---------- ARTICLES ---------- */
+        .articles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .article {
+            background: var(--bg-surface);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .article h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .article p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .meta {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 1024px) {
+            .articles {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .market-snapshot {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                align-items: stretch;
+                justify-content: space-between;
+            }
+
+            .navbar {
+                display: flex;
+                gap: 12px;
+            }
+
+            .widget-container {
+                margin-top: 0;
+            }
+
+            .articles {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main {
+                padding: 16px;
+            }
+
+            .headline {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body data-theme="light">
+
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <h1>Market Daily</h1>
+
+            <nav class="navbar">
+                <a href="#">Markets</a>
+                <a href="#">Economy</a>
+                <a href="#">Tech</a>
+                <a href="#">Crypto</a>
+                <a href="#">Opinion</a>
+            </nav>
+
+            <div class="theme-switch">
+                <button id="themeToggle">Switch to dark mode</button>
+            </div>
+
+            <div class="widget-container">
+                <div id="stocks-widget"></div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+            <h2 class="headline">Stocks Rally as Inflation Data Eases Market Fears</h2>
+            <p class="subhead">
+                Global markets moved higher after new inflation data suggested easing price pressures,
+                boosting investor confidence ahead of central bank meetings.
+            </p>
+
+            <section class="market-snapshot">
+                <div class="market-card">
+                    <div class="label">Today · Economic Calendar</div>
+                    <div class="value">US CPI Inflation Report</div>
+                </div>
+                <div class="market-card">
+                    <div class="label">Central Banks</div>
+                    <div class="value">ECB Policy Meeting</div>
+                </div>
+                <div class="market-card">
+                    <div class="label">Earnings</div>
+                    <div class="value">Netflix · Tesla · JPMorgan</div>
+                </div>
+                <div class="market-card">
+                    <div class="label">Market Sentiment</div>
+                    <div class="value up">Risk On</div>
+                </div>
+            </section>
+
+            <section class="articles">
+                <article class="article">
+                    <h3>Federal Reserve Signals Possible Rate Pause</h3>
+                    <p>
+                        Officials hinted that interest rate hikes may slow as inflation trends
+                        closer to targets.
+                    </p>
+                    <div class="meta">Economy · 2h ago</div>
+                </article>
+
+                <article class="article">
+                    <h3>Apple Shares Climb on AI Strategy</h3>
+                    <p>
+                        Investors reacted positively to the company’s long-term artificial
+                        intelligence roadmap.
+                    </p>
+                    <div class="meta">Tech · 3h ago</div>
+                </article>
+
+                <article class="article">
+                    <h3>Oil Prices Stabilize After Volatile Week</h3>
+                    <p>
+                        Energy markets calmed as supply concerns eased following diplomatic talks.
+                    </p>
+                    <div class="meta">Commodities · 4h ago</div>
+                </article>
+            </section>
+        </main>
+
+    </div>
+
+
+    <script>
+        const widgetLightTheme = {
+            'bg-color': '#ffffff',
+            'text-color': '#111111',
+            'primary-color': '#111111',
+            'font-family': 'Inter, sans-serif'
+        };
+
+        const widgetDarkTheme = {
+            'bg-color': '#0f172a',
+            'text-color': '#e5e7eb',
+            'primary-color': '#e5e7eb',
+            'font-family': 'Inter, sans-serif'
+        };
+
+        function applyWidgetTheme(theme) {
+            const widget = document.querySelector('stocks-snapshot');
+            if (!widget) return;
+
+            Object.entries(theme).forEach(([key, value]) => {
+                widget.style.setProperty(`--stocks-${key}`, value);
+            });
+        }
+    </script>
+
+
+    <!-- THEME TOGGLE SCRIPT -->
+    <script>
+        const toggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
+
+        function updateLabel() {
+            toggleBtn.textContent =
+                body.dataset.theme === 'dark'
+                    ? 'Switch to light mode'
+                    : 'Switch to dark mode';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const isDark = body.dataset.theme === 'dark';
+
+            body.dataset.theme = isDark ? 'light' : 'dark';
+            updateLabel();
+
+            applyWidgetTheme(isDark ? widgetLightTheme : widgetDarkTheme);
+        });
+
+
+        updateLabel();
+    </script>
+
+    <!-- WIDGET INIT -->
+    <script src="../dist/stocks.bundle.js"></script>
+    <script>
+        StocksSnapshot.init({
+            containerId: 'stocks-widget',
+            symbol: 'AAPL',
+            apiKey: 'O5GMYY8SBQ83A8J4',
+            fontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap',
+            theme: widgetLightTheme,
+            sparkline: 'week'
+        });
+    </script>
+
+    <script>
+        const container = document.getElementById('stocks-widget');
+
+        container.addEventListener('quoteClick', (e) => {
+            const { symbol, url } = e.detail;
+
+            console.log('Quote clicked:', symbol, url);
+
+            // navegación simple
+            window.open(url, '_self');
+        });
+    </script>
+
+
+</body>
+
+</html>
