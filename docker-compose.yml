@@ -4,13 +4,13 @@ services:
   widget-static:
     build:
       context: .
-      dockerfile: dockerfile.static
+      dockerfile: DockerFile.static
     ports:
       - "8080:80"
 
   widget-ssr:
     build:
       context: .
-      dockerfile: dockerfile
+      dockerfile: DockerFile
     ports:
       - "3000:3000"
