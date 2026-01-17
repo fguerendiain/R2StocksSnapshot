@@ -227,7 +227,7 @@ docker-compose up --build
 **Use cases:**
 
 - Serve the static widget bundle
-- Run the optional SSR server
+- Run the optional SSR server **http://localhost:3000/widget**
 
 Docker Compose is optional and intended for reproducible local environments.
 
