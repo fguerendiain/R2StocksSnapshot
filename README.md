@@ -217,12 +217,6 @@ Multi-stage Docker setup:
 - Build stage: `node:alpine` (build & bundle)
 - Runtime stage: `nginx:alpine` (serve static assets)
 
-### Build & Run (Docker)
-
-```bash
-docker build -t stocks-widget .
-docker run -p 8080:80 stocks-widget
-```
 ### Run with Docker Compose
 
 A `docker-compose.yml` is included to simplify local development and demos.
@@ -234,9 +228,42 @@ docker-compose up --build
 
 - Serve the static widget bundle
 - Run the optional SSR server
-- Launch a demo host page
 
 Docker Compose is optional and intended for reproducible local environments.
+
+---
+
+## 🧪 Demo Pages
+
+The `/public` directory contains two standalone HTML files that demonstrate
+different usage scenarios of the widget.
+
+### `financeBlogDemo.html`
+
+This page simulates a financial news website layout where the widget is embedded
+inside a sidebar.
+
+It demonstrates:
+- Embedding the widget in a real-world layout
+- Theme integration (light / dark mode)
+- Responsive behavior inside a constrained container
+- How the widget adapts to layout changes using container-based responsiveness
+
+This demo represents a realistic production use case.
+
+---
+
+### `onlyWidgetDemo.html`
+
+This page renders only the widget in isolation.
+
+It is useful for:
+- Local development
+- Visual testing
+- Debugging widget behavior
+- Performance and network throttling tests
+
+This demo focuses exclusively on the widget without external layout influences.
 
 ---
 
