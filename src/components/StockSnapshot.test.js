@@ -62,7 +62,6 @@ describe("StocksSnapshot", () => {
     vi.clearAllMocks();
     document.body.innerHTML = "";
 
-    // 🔑 CLAVE: evitar delays + interval
     vi.spyOn(StocksSnapshot.prototype, "initializeData").mockResolvedValue();
   });
 

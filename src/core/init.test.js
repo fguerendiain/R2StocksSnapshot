@@ -35,7 +35,6 @@ describe("init", () => {
       refreshInterval: 1000,
     });
 
-    // mock customElements SOLO acá
     const defineSpy = vi.spyOn(customElements, "define");
     vi.spyOn(customElements, "get").mockReturnValue(undefined);
 
