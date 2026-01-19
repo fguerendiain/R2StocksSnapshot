@@ -1,189 +1,176 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { StocksSnapshot } from './StocksSnapshot';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeAll,
+  beforeEach,
+  afterEach,
+} from "vitest";
+import { StocksSnapshot } from "./StocksSnapshot";
 
-vi.mock('@opentelemetry/api', () => ({
-    trace: {
-        getTracer: () => ({
-            startSpan: () => ({
-                end: vi.fn(),
-            }),
-        }),
-    },
+// ─────────────────────────────────────────────
+// Mocks
+// ─────────────────────────────────────────────
+vi.mock("../services/marketApi", () => ({
+  fetchStockQuote: vi.fn(),
+  fetchStockOverview: vi.fn(),
+  fetchStockDayHistory: vi.fn(),
+  fetchStockHourlyHistory: vi.fn(),
 }));
 
-vi.mock('../services/marketApi', () => ({
-    fetchStockQuote: vi.fn(),
-    fetchStockOverview: vi.fn(),
-    fetchStockDayHistory: vi.fn(),
-    fetchStockHourlyHistory: vi.fn(),
+vi.mock("../ui/sparkline.js", () => ({
+  renderSparkline: vi.fn(() => "<svg></svg>"),
 }));
 
-vi.mock('../ui/sparkline.js', () => ({
-    renderSparkline: vi.fn(() => '<svg></svg>'),
+vi.mock("@opentelemetry/api", () => ({
+  trace: {
+    getTracer: () => ({
+      startSpan: () => ({ end: vi.fn() }),
+    }),
+  },
 }));
 
-beforeEach(() => {
-    document.body.innerHTML = '';
-    vi.useFakeTimers();
+import {
+  fetchStockQuote,
+  fetchStockOverview,
+  fetchStockDayHistory,
+} from "../services/marketApi";
 
-    global.requestIdleCallback = undefined;
-});
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
+const baseConfig = {
+  symbol: "AAPL",
+  apiKey: "test-key",
+  refreshInterval: 1000,
+  sparkline: "week",
+  theme: { primary: "red" },
+};
 
-describe('StocksSnapshot', () => {
-    it('renders shell on connectedCallback', () => {
-        if (!customElements.get('stocks-snapshot')) {
-            customElements.define('stocks-snapshot', StocksSnapshot);
-        }
+// ─────────────────────────────────────────────
+// Tests
+// ─────────────────────────────────────────────
+describe("StocksSnapshot", () => {
+  beforeAll(() => {
+    if (!customElements.get("stocks-snapshot")) {
+      customElements.define("stocks-snapshot", StocksSnapshot);
+    }
+  });
 
-        const el = document.createElement('stocks-snapshot');
-        el.config = {
-            symbol: 'AAPL',
-            apiKey: 'key',
-            refreshInterval: 1000,
-            theme: {},
-        };
+  beforeEach(() => {
+    vi.clearAllMocks();
+    document.body.innerHTML = "";
 
+    // 🔑 CLAVE: evitar delays + interval
+    vi.spyOn(StocksSnapshot.prototype, "initializeData").mockResolvedValue();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders shell on connectedCallback", () => {
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
     document.body.appendChild(el);
 
     expect(el.shadowRoot).toBeTruthy();
-    expect(el.shadowRoot.querySelector('.widget')).toBeTruthy();
-});
+    expect(el.shadowRoot.querySelector(".widget")).toBeTruthy();
+  });
 
-it('applies theme variables', () => {
-    if (!customElements.get('stocks-snapshot')) {
-        customElements.define('stocks-snapshot', StocksSnapshot);
-    }
+  it("applies theme variables", () => {
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
+    document.body.appendChild(el);
 
-    const el = document.createElement('stocks-snapshot');
-    el.config = {
-        symbol: 'AAPL',
-        apiKey: 'key',
-        refreshInterval: 1000,
-        theme: { primary: 'red' },
-    };
+    expect(el.style.getPropertyValue("--stocks-primary")).toBe("red");
+  });
 
-document.body.appendChild(el);
-
-expect(el.style.getPropertyValue('--stocks-primary')).toBe('red');
-});
-
-it('renders company name and binds click', async () => {
-    const { fetchStockOverview } = await import('../services/marketApi');
-
+  it("renders company name and binds click", async () => {
     fetchStockOverview.mockResolvedValue({
-        name: 'Apple',
-        url: 'https://apple.com',
+      name: "Apple Inc",
+      url: "https://apple.com",
     });
 
-    if (!customElements.get('stocks-snapshot')) {
-        customElements.define('stocks-snapshot', StocksSnapshot);
-    }
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
+    document.body.appendChild(el);
 
-    const el = document.createElement('stocks-snapshot');
-    el.config = {
-        symbol: 'AAPL',
-        apiKey: 'key',
-        refreshInterval: 1000,
-        theme: {},
-    };
+    await el.getCompanyName();
 
-document.body.appendChild(el);
-await el.getCompanyName();
+    const name = el.shadowRoot.querySelector(".companyName");
+    const symbol = el.shadowRoot.querySelector(".symbol");
 
-expect(el.shadowRoot.querySelector('.companyName').textContent)
-    .toBe('Apple');
-});
+    expect(name.textContent).toBe("Apple Inc");
 
-it('renders quote data', () => {
-    if (!customElements.get('stocks-snapshot')) {
-        customElements.define('stocks-snapshot', StocksSnapshot);
-    }
+    const clickSpy = vi.fn();
+    el.addEventListener("quoteClick", clickSpy);
 
-    const el = document.createElement('stocks-snapshot');
-    el.config = {
-        symbol: 'AAPL',
-        apiKey: 'key',
-        refreshInterval: 1000,
-        theme: {},
-    };
+    symbol.click();
 
-document.body.appendChild(el);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(clickSpy.mock.calls[0][0].detail.symbol).toBe("AAPL");
+  });
 
-el.renderData({
-    symbol: 'AAPL',
-    price: '100.00',
-    change: '2.00',
-    changePercent: '2.00',
-    lastUpdate: '2025-01-01',
-});
+  it("renders quote data", async () => {
+    fetchStockQuote.mockResolvedValue({
+      symbol: "AAPL",
+      price: 150,
+      change: 2,
+      changePercent: 1.2,
+      lastUpdate: "2024-01-10",
+    });
 
-expect(el.shadowRoot.querySelector('.price').textContent)
-    .toBe('$100.00');
-});
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
+    document.body.appendChild(el);
 
-it('renders error message', () => {
-    if (!customElements.get('stocks-snapshot')) {
-        customElements.define('stocks-snapshot', StocksSnapshot);
-    }
+    await el.getData();
 
-    const el = document.createElement('stocks-snapshot');
-    el.config = {
-        symbol: 'AAPL',
-        apiKey: 'key',
-        refreshInterval: 1000,
-        theme: {},
-    };
+    expect(el.shadowRoot.querySelector(".price").textContent).toBe("$150");
+    expect(
+      el.shadowRoot.querySelector(".change").classList.contains("up"),
+    ).toBe(true);
+  });
 
-document.body.appendChild(el);
-el.renderError('fail');
+  it("renders error message on API failure", async () => {
+    fetchStockQuote.mockRejectedValue(new Error("API error"));
 
-expect(el.shadowRoot.querySelector('.error').textContent)
-    .toContain('fail');
-});
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
+    document.body.appendChild(el);
 
-it('renders sparkline when data is available', async () => {
-    if (!customElements.get('stocks-snapshot')) {
-        customElements.define('stocks-snapshot', StocksSnapshot);
-    }
+    await el.getData();
 
-    const el = document.createElement('stocks-snapshot');
-    el.config = {
-        symbol: 'AAPL',
-        apiKey: 'key',
-        refreshInterval: 1000,
-        theme: {},
-        sparkline: 'week',
-    };
+    expect(el.shadowRoot.querySelector(".error").textContent).toContain(
+      "API error",
+    );
+  });
 
-document.body.appendChild(el);
+  it("renders sparkline when data is available", async () => {
+    fetchStockDayHistory.mockResolvedValue([10, 12, 11, 14]);
 
-el.prices = [1, 2, 3];
-await el.renderSparkline();
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
+    document.body.appendChild(el);
 
-expect(el.shadowRoot.querySelector('.sparkline').innerHTML)
-    .toContain('svg');
-});
+    await el.getSparkline();
+    await el.renderSparkline();
 
-it('clears interval on disconnectedCallback', () => {
-    if (!customElements.get('stocks-snapshot')) {
-        customElements.define('stocks-snapshot', StocksSnapshot);
-    }
+    const sparkline = el.shadowRoot.querySelector(".sparkline");
+    expect(sparkline.innerHTML).toContain("<svg");
+    expect(sparkline.classList.contains("has-data")).toBe(true);
+  });
 
-    const el = document.createElement('stocks-snapshot');
-    el.config = {
-        symbol: 'AAPL',
-        apiKey: 'key',
-        refreshInterval: 1000,
-        theme: {},
-    };
+  it("clears interval on disconnectedCallback", () => {
+    const el = document.createElement("stocks-snapshot");
+    el.setConfig(baseConfig);
+    document.body.appendChild(el);
 
-document.body.appendChild(el);
-el.intervalId = setInterval(() => { }, 1000);
+    const spy = vi.spyOn(global, "clearInterval");
+    el.disconnectedCallback();
 
-const spy = vi.spyOn(global, 'clearInterval');
-
-el.disconnectedCallback();
-
-expect(spy).toHaveBeenCalled();
-});
+    expect(spy).toHaveBeenCalled();
+  });
 });
