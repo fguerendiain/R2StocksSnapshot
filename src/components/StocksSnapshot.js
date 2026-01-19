@@ -21,7 +21,6 @@ export class StocksSnapshot extends HTMLElement {
     this._config = null;
     this.intervalId = null;
     this.prices = [];
-    this.maxPoints = 20;
     this.fetchRequest = {};
   }
 
@@ -176,7 +175,6 @@ export class StocksSnapshot extends HTMLElement {
   }
 
   scheduleSparklineRender() {
-    if (!this._config.sparkline) return;
     if (this.prices.length < 2) return;
     if (!("requestIdleCallback" in window)) {
       this.renderSparkline();
